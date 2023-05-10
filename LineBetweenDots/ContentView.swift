@@ -12,29 +12,63 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
+            Text("Offset by passing horizontal")
+                .border(Color.green)
+                .offset(x: 20, y: 50)
+                .border(Color.gray)
             Spacer()
             ZStack {
                 Circle()
                     .fill(Color.blue)
-                    .frame(width: 20, height: 20)
-                    .offset(x: -100, y : 0)
+                    .frame(width: 50, height: 50)
+                    .offset(x: -100, y: 0)
                 Circle()
-                    .fill(Color.green)
-                    .frame(width: 20, height: 20)
+                    .fill(Color.blue)
+                    .frame(width: 50, height: 50)
                     .offset(x: 100, y: 0)
-                Path { path in
-                    path.move(to: CGPoint(x: 102, y: 363))
-                    path.addLine(to: CGPoint(x: 288, y: 363))
+                if isConnecting {
+                    TrimmedPath(from: CGPoint(x: 100, y: 300),
+                                to: CGPoint(x: 275, y: 300),
+                                trimAmount: 0.5)
+                        .stroke(Color.red, lineWidth: 5)
+                        .animation(.easeInOut(duration: 100))
+//                        .onAppear {
+//                            withAnimation(.easeInOut(duration: 1)) {
+//                                self.isConnecting = true
+//                            }
+//                        }
                 }
-                .stroke(Color.red, lineWidth: 5)
-                .opacity(isConnecting ? 1 : 0)
-                .animation(.easeInOut(duration: 5))
             }
             Spacer()
             Button("Connect") {
                 isConnecting.toggle()
             }
         }
+    }
+}
+
+struct TrimmedPath: Shape {
+    var from: CGPoint
+    var to: CGPoint
+    var trimAmount: CGFloat
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: from)
+        path.addLine(to: CGPoint(x: from.x + (to.x - from.x) * trimAmount,
+                                 y: from.y + (to.y - from.y) * trimAmount))
+        return path
+    }
+    
+    var animatableData: CGFloat {
+        get { trimAmount }
+        set { trimAmount = newValue }
+    }
+}
+
+extension Animation {
+    func onAnimationCompleted(for value: Bool) -> Animation {
+        value ? self : self.delay(0.5)
     }
 }
 
